@@ -6,11 +6,10 @@
 # It also uses CRC to ensure packet integrity
 # Author: Ibai Ros
 # Date: 05/01/2019
-# Version: 1.0
-
-import RPi.GPIO as GPIO
+# Version: 1.1
 
 from lib_nrf24 import NRF24
+import RPi.GPIO as GPIO
 import spidev
 import sys
 import time
@@ -26,10 +25,12 @@ SENDER_CSN = 25
 SENDER_CE = 0
 SENDER_CHANNEL = 0x70  # Channel 60
 SENDER_PIPE = pipes[0]
+
 RECEIVER_CSN = 22
 RECEIVER_CE = 1
 RECEIVER_CHANNEL = 0x60  # Channel 70
 RECEIVER_PIPE = pipes[1]
+
 DATA_SIZE = 27  # 27 bytes
 DATA_TIMEOUT = 0.01  # 10 ms
 HELLO_TIMEOUT = 0.01  # 10 ms
@@ -62,6 +63,7 @@ def wait_for_data(receiver):
     """ This is a blocking function that waits
     until the ACK is available in the receiver pipe
     or until the timeout expires. """
+
     start_time = time.time()
     while not receiver.available(RECEIVER_PIPE):
         if time.time() - start_time < DATA_TIMEOUT:
@@ -75,6 +77,7 @@ def wait_for_hello(receiver):
     """ This is a blocking function that waits
     until we receive a HELLO message or the
     timeout expires. """
+
     start_time = time.time()
     while not receiver.available(RECEIVER_PIPE):
         if time.time() - start_time < HELLO_TIMEOUT:
@@ -86,11 +89,13 @@ def wait_for_hello(receiver):
 
 def send_packet(sender, payload):
     """ Send the packet through the sender radio. """
+
     sender.write(payload)
 
 
 def check_crc(crc, payload):
     """ Function that checks the CRC and returns the result """
+
     crc_str = str(bytes(crc))
     if len(crc_str) < 5:
         padding_length = 5 - len(crc_str)
@@ -106,19 +111,23 @@ def check_crc(crc, payload):
 
 def write_file(file_path, payload_list):
     """ Function that stores the file in memory """
+
     with open(file_path, "wb") as f:
         for chunk in payload_list:
             f.write(chunk)
 
 
 def hello(sender, receiver):
-    # Wait for the HELLO message until we get one
-    # TODO implement 3-way (SYN -> SYN + ACK -> ACK) handshake
+    """ Function that waits for the HELLO message
+    until we get one """
+
     hello_rcv = False
     while not hello_rcv:
+        receiver.startListening()
         if wait_for_hello(receiver):
             hello_syn = []
             receiver.read(hello_syn, receiver.getDynamicPayloadSize())
+            receiver.stopListening()
             if bytes(hello_syn) == b'HELLO':
                 send_packet(sender, b'HELLOACK')
                 hello_rcv = True
@@ -145,13 +154,13 @@ def main():
     rx_success = False
     seq_num = 1
     payload_list = list()
+    receiver.startListening()
 
     # HELLO function, commented for now
     # hello(sender, receiver)
 
-    # Recieve file
+    # Receive file
     while not rx_success:
-        receiver.startListening()
         rx_buffer = []
         received_something = False
         while not received_something:
@@ -173,11 +182,11 @@ def main():
             else:
                 send_packet(sender, b'ERROR')
                 print("    Packet number " + seq_num + " received incorrectly")
-            receiver.startListening()
         else:
             send_packet(sender, b'ACK')
             rx_success = True
             print("RECEPTION SUCCESSFUL")
+        receiver.startListening()
 
     write_file(sys.argv[1], payload_list)
 
