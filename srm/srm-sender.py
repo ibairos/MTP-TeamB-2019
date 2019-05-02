@@ -10,7 +10,7 @@
 
 import RPi.GPIO as GPIO
 
-from libraries.lib_nrf24 import NRF24
+from lib_nrf24 import NRF24
 import spidev
 import sys
 import os

@@ -8,7 +8,7 @@
 # Date: 05/01/2019
 # Version: 1.1
 
-from libraries.lib_nrf24 import NRF24
+from lib_nrf24 import NRF24
 import RPi.GPIO as GPIO
 import spidev
 import sys
