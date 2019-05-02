@@ -34,7 +34,8 @@ RECEIVER_CE = 1
 RECEIVER_CHANNEL = channels[1]  # Channel 20
 RECEIVER_PIPE = pipes[1]
 
-DATA_SIZE = 27  # Size of the data chunks (27 bytes)
+DATA_SIZE = 30  # Size of the data chunks (27 bytes)
+CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
 ACK_TIMEOUT = 0.03  # Timeout for receiving the ACK (30 ms)
 HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLOACK message (10 ms)
 
@@ -124,18 +125,16 @@ def calculate_crc(payload):
     """ This is a function for calculating the crc
     and making sure it has the right length. """
 
-    crc_str = str(crc16.crc16xmodem(payload))
-    padding_length = 5 - len(crc_str)
-    if padding_length != 0:
-        for i in range(0, padding_length):
-            crc_str = '0' + crc_str
-    return crc_str
+    crc = crc16.crc16xmodem(payload)
+    crc_bytes = crc.to_bytes(CRC_SIZE, byteorder='big')
+
+    return crc_bytes
 
 
 def build_frame(payload):
     """ Function that builds the frame in bytes """
 
-    crc = bytes(calculate_crc(payload).encode('utf-16'))
+    crc = calculate_crc(payload)
     return crc + payload
 
 
