@@ -10,7 +10,7 @@
 
 import RPi.GPIO as GPIO
 
-from lib_nrf24 import NRF24
+from lib.lib_nrf24 import NRF24
 import spidev
 import sys
 import os
@@ -204,10 +204,10 @@ def main():
                     receiver.read(ack, receiver.getDynamicPayloadSize())
                     if bytes(ack) == b'ACK':
                         retransmit = False
-                        print("Packet number " + seq_num + " transmitted successfully")
+                        print("Packet number " + str(seq_num) + " transmitted successfully")
                         seq_num = seq_num + 1
                 else:
-                    print("    Attempt " + attempt + " to retransmit packet number " + seq_num)
+                    print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
                     if attempt > 1000:
                         exit("Program ended after trying to retransmit for more than 1000 times")
                 receiver.stopListening()
@@ -226,7 +226,7 @@ def main():
                     tx_success = True
                     print("TRANSMISSION SUCCESSFUL")
             else:
-                print("    Attempt " + attempt_final + " to retransmit FINAL packet")
+                print("    Attempt " + str(attempt_final) + " to retransmit FINAL packet")
                 if attempt_final > 1000:
                     exit("Program ended after failing to transmit the EOT message")
 

@@ -8,7 +8,7 @@
 # Date: 05/01/2019
 # Version: 1.1
 
-from lib_nrf24 import NRF24
+from lib.lib_nrf24 import NRF24
 import RPi.GPIO as GPIO
 import spidev
 import sys
@@ -179,10 +179,10 @@ def main():
                 send_packet(sender, b'ACK')
                 payload_list.append(bytes(payload))
                 seq_num = seq_num + 1
-                print("Packet number " + seq_num + " received successfully")
+                print("Packet number " + str(seq_num) + " received successfully")
             else:
                 send_packet(sender, b'ERROR')
-                print("    Packet number " + seq_num + " received incorrectly")
+                print("    Packet number " + str(seq_num) + " received incorrectly")
         else:
             send_packet(sender, b'ACK')
             rx_success = True
