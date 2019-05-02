@@ -8,14 +8,16 @@
 # Date: 05/01/2019
 # Version: 1.1
 
-from lib_nrf24 import NRF24
 import RPi.GPIO as GPIO
+
+from lib_nrf24 import NRF24
 import spidev
 import sys
 import os
 import time
 import crc16
 import chardet
+import hashlib
 
 # Initialization
 GPIO.setmode(GPIO.BCM)
@@ -42,6 +44,8 @@ HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLOACK message (10 ms)
 
 IN_FILEPATH = sys.argv[1]  # Filepath of the input file
 
+ENCODING = "UTF-8"
+
 
 def initialize_radios(csn, ce, channel):
     """ This function initializes the radios, each
@@ -66,22 +70,25 @@ def initialize_radios(csn, ce, channel):
     return radio
 
 
-def read_file(file_path):
+def read_file_and_encoding(file_path):
     """ Gets the provided file and reads its content as bytes,
-    after that, it stores everything in the variable payload_list,
-    which it returns. """
+        after that, it stores everything in the variable payload_list,
+        which it returns. It also detects the encoding. """
 
+    global ENCODING
     payload_list = list()
 
     if os.path.isfile(file_path):
         print("Loading File in: " + file_path)
-        with open(file_path, 'rb') as f:
-            while True:
-                chunk = f.read(DATA_SIZE)
-                if chunk:
-                    payload_list.append(chunk)
-                else:
-                    break
+        raw_data = open(file_path, 'rb').read()
+        ENCODING = chardet.detect(raw_data)['encoding']
+        pos = 0
+        while True:
+            chunk = raw_data[pos:pos+DATA_SIZE]
+            payload_list.append(chunk)
+            if len(chunk) != DATA_SIZE:
+                break
+            pos = pos + DATA_SIZE
     else:
         print("ERROR: file does not exist in PATH: " + file_path)
 
@@ -141,12 +148,21 @@ def build_frame(payload):
     return crc + payload
 
 
-def detect_encoding(file):
-    """ Function that detects encoding and return it """
-    raw_data = open(file, 'rb').read()
-    result = chardet.detect(raw_data)
-    enc = result['encoding']
-    return enc
+def error_available(receiver):
+    """ This function checks if there is any error messages """
+
+    if receiver.available(RECEIVER_PIPE):
+        return True
+    else:
+        return False
+
+
+def calculate_hash(payload_list, encoding):
+    """ This function is used for calculating the hash of the payload_list """
+
+    hash_str = hashlib.md5(repr(payload_list).encode(encoding)).hexdigest()
+    hash_bytes = bytes(hash_str.encode(encoding))
+    return hash_bytes
 
 
 def hello(sender, receiver):
@@ -186,53 +202,33 @@ def main():
     # hello(sender, receiver)
 
     # Read file
-    payload_list = read_file(IN_FILEPATH)
+    payload_list = read_file_and_encoding(IN_FILEPATH)
 
     # Initialize loop variables and functions
-    tx_success = False
-    seq_num = 1
+    receiver.startListening()
 
-    # Send file
-    while not tx_success:
-        # Sending payload
+    # Sending payload
+    retransmit = True
+
+    while retransmit:
+        receiver.flush_rx()
+        ack = []
         for payload in payload_list:
-            retransmit = True
-            attempt = 0
-            while retransmit:
-                receiver.flush_rx()
-                send_packet(sender, build_frame(payload))
-                receiver.startListening()
-                attempt = attempt + 1
-                ack = []
-                if wait_for_ack(receiver):
-                    receiver.read(ack, receiver.getDynamicPayloadSize())
-                    if bytes(ack) == b'ACK':
-                        retransmit = False
-                        print("Packet number " + str(seq_num) + " transmitted successfully")
-                        seq_num = seq_num + 1
-                else:
-                    print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
-                    if attempt > 1000:
-                        exit("Program ended after trying to retransmit for more than 1000 times")
-                receiver.stopListening()
-
-        retransmit_final = True
-        attempt_final = 0
-        while retransmit_final:
-            send_packet(sender, b'ENDOFTRANSMISSION')
-            receiver.startListening()
-            attempt_final = attempt_final + 1
-            ack = []
+            send_packet(sender, build_frame(payload))
+            if error_available(receiver):
+                receiver.read(ack, receiver.getDynamicPayloadSize())
+                if bytes(ack) == b'ERROR':
+                    break
+        if not error_available(receiver):
+            eot_payload = "TeamB_EOT-" + ENCODING
+            send_packet(sender, bytes(eot_payload.encode("utf-8")))
+            send_packet(sender, calculate_hash(payload_list, ENCODING))
             if wait_for_ack(receiver):
                 receiver.read(ack, receiver.getDynamicPayloadSize())
                 if bytes(ack) == b'ACK':
-                    retransmit_final = False
-                    tx_success = True
-                    print("TRANSMISSION SUCCESSFUL")
-            else:
-                print("    Attempt " + str(attempt_final) + " to retransmit FINAL packet")
-                if attempt_final > 1000:
-                    exit("Program ended after failing to transmit the EOT message")
+                    retransmit = False
+
+    print("FILE TRANSMITTED SUCCESSFULLY")
 
 
 if __name__ == '__main__':

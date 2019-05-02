@@ -7,6 +7,7 @@
 # Author: Ibai Ros
 # Date: 05/01/2019
 # Version: 1.1
+import hashlib
 
 from lib_nrf24 import NRF24
 import RPi.GPIO as GPIO
@@ -40,7 +41,6 @@ HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLO message (10 ms)
 
 OUT_FILEPATH = sys.argv[1]  # Filepath of the output file
 
-
 def initialize_radios(csn, ce, channel):
     """ This function initializes the radios, each
     radio being the NRF24 transceivers.
@@ -64,9 +64,9 @@ def initialize_radios(csn, ce, channel):
     return radio
 
 
-def wait_for_data(receiver):
+def received_something(receiver):
     """ This is a blocking function that waits
-    until the ACK is available in the receiver pipe
+    until there is data available in the receiver pipe
     or until the timeout expires. """
 
     start_time = time.time()
@@ -109,6 +109,14 @@ def check_crc(crc, payload):
         return True
     else:
         return False
+
+
+def check_hash(payload_list, hash_bytes, encoding):
+    hash_str = hashlib.md5(repr(payload_list).encode(encoding)).hexdigest()
+    hash_bytes_payload = bytes(hash_str.encode(encoding))
+    if hash_bytes == hash_bytes_payload:
+        return True
+    return False
 
 
 def write_file(file_path, payload_list):
@@ -157,39 +165,38 @@ def main():
 
     # Initialize loop variables and functions
     rx_success = False
-    seq_num = 1
+    seq_num = 0
     payload_list = list()
     receiver.startListening()
 
     # Receive file
     while not rx_success:
         rx_buffer = []
-        received_something = False
-        while not received_something:
-            if wait_for_data(receiver):
-                receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
-                received_something = True
-            elif len(payload_list) != 0:
-                send_packet(sender, b'ACK')
+        while not received_something(receiver):
+            receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
 
-        receiver.stopListening()
-        if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
+        if b"TeamB_EOT-" not in bytes(rx_buffer):
             crc = rx_buffer[:CRC_SIZE]
             payload = rx_buffer[CRC_SIZE:]
             if check_crc(crc, payload):
-                send_packet(sender, b'ACK')
                 payload_list.append(bytes(payload))
                 seq_num = seq_num + 1
                 print("Packet number " + str(seq_num) + " received successfully")
             else:
+                payload_list = list()
                 send_packet(sender, b'ERROR')
                 print("    Packet number " + str(seq_num) + " received incorrectly")
         else:
-            send_packet(sender, b'ACK')
-            rx_success = True
-            print("RECEPTION SUCCESSFUL")
-        receiver.startListening()
-
+            encoding = bytes(rx_buffer).decode("utf-8")
+            if received_something(receiver):
+                receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
+                hash_bytes = rx_buffer
+                if check_hash(payload_list, hash_bytes, encoding):
+                    send_packet(sender, b'ACK')
+                    rx_success = True
+                    print("RECEPTION SUCCESSFUL")
+                else:
+                    payload_list = list()
     write_file(OUT_FILEPATH, payload_list)
 
 
