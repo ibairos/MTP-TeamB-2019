@@ -32,7 +32,8 @@ RECEIVER_CE = 1
 RECEIVER_CHANNEL = channels[0]  # Channel 10
 RECEIVER_PIPE = pipes[0]
 
-DATA_SIZE = 27  # Size of the data chunks (27 bytes)
+DATA_SIZE = 30  # Size of the data chunks (30 bytes)
+CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
 DATA_TIMEOUT = 0.01  # Timeout for receiving the DATA after the ACK is sent (10 ms)
 HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLO message (10 ms)
 
@@ -97,14 +98,11 @@ def send_packet(sender, payload):
 def check_crc(crc, payload):
     """ Function that checks the CRC and returns the result """
 
-    crc_str = str(bytes(crc))
-    if len(crc_str) < 5:
-        padding_length = 5 - len(crc_str)
-        if padding_length != 0:
-            for i in range(0, padding_length):
-                crc_str = '0' + crc_str
-    crc_payload = str(bytes(crc16.crc16xmodem(bytes(payload)).encode('utf-8')))
-    if crc_payload == crc_str:
+    crc_int = int.from_bytes(crc, 'big')
+
+    crc_payload = crc16.crc16xmodem(payload)
+
+    if crc_int == crc_payload:
         return True
     else:
         return False
@@ -173,8 +171,8 @@ def main():
 
         receiver.stopListening()
         if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
-            crc = rx_buffer[:-5]
-            payload = rx_buffer[-5:]
+            crc = rx_buffer[:CRC_SIZE]
+            payload = rx_buffer[CRC_SIZE:]
             if check_crc(crc, payload):
                 send_packet(sender, b'ACK')
                 payload_list.append(bytes(payload))
