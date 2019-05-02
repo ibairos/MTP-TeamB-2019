@@ -16,6 +16,7 @@ import sys
 import os
 import time
 import crc16
+import chardet
 
 # Initialization
 GPIO.setmode(GPIO.BCM)
@@ -36,8 +37,11 @@ RECEIVER_PIPE = pipes[1]
 
 DATA_SIZE = 30  # Size of the data chunks (27 bytes)
 CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
+
 ACK_TIMEOUT = 0.03  # Timeout for receiving the ACK (30 ms)
 HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLOACK message (10 ms)
+
+IN_FILEPATH = sys.argv[1]  # Filepath of the input file
 
 
 def initialize_radios(csn, ce, channel):
@@ -138,10 +142,12 @@ def build_frame(payload):
     return crc + payload
 
 
-def detect_encoding(payload_list):
+def detect_encoding(file):
     """ Function that detects encoding and return it """
-    # TODO implement detect_encoding function
-    return None
+    raw_data = open(file, 'rb').read()
+    result = chardet.detect(raw_data)
+    enc = result['encoding']
+    return enc
 
 
 def hello(sender, receiver):
@@ -178,7 +184,7 @@ def main():
     receiver.printDetails()
 
     # Read file
-    payload_list = read_file(sys.argv[1])
+    payload_list = read_file(IN_FILEPATH)
 
     # Initialize loop variables and functions
     tx_success = False
