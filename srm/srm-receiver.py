@@ -29,12 +29,12 @@ SENDER_PIPE = pipes[1]
 
 RECEIVER_CSN = 22
 RECEIVER_CE = 1
-RECEIVER_CHANNEL = 0x60[0]  # Channel 10
+RECEIVER_CHANNEL = channels[0]  # Channel 10
 RECEIVER_PIPE = pipes[0]
 
-DATA_SIZE = 27  # 27 bytes
-DATA_TIMEOUT = 0.01  # 10 ms
-HELLO_TIMEOUT = 0.01  # 10 ms
+DATA_SIZE = 27  # Size of the data chunks (27 bytes)
+DATA_TIMEOUT = 0.01  # Timeout for receiving the DATA after the ACK is sent (10 ms)
+HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLO message (10 ms)
 
 
 def initialize_radios(csn, ce, channel):
