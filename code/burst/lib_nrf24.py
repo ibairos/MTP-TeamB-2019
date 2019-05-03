@@ -200,7 +200,7 @@ class NRF24:
         if self.ce_pin == 0:
             return
         # rf24-CE is optional. Tie to HIGH if not used. (Altho, left floating seems to read HIGH anyway??? - risky!)
-        # Some RF24 modes may NEED control over CE.
+        # Some RF24 code may NEED control over CE.
         # non-powerdown, fixed PTX or RTX role, dynamic payload size & ack-payload:    does NOT need CE.
         if level == NRF24.HIGH:
             self.GPIO.output(self.ce_pin, self.GPIO.HIGH)
@@ -774,7 +774,7 @@ class NRF24:
 
     def setRetries(self, delay, count):
         # see specs. Delay code below 5 can conflict with some ACK lengths
-        # and count should be set = 0 for non-ACK modes
+        # and count should be set = 0 for non-ACK code
         self.write_register(NRF24.SETUP_RETR, (delay & 0xf) << NRF24.ARD | (count & 0xf))
 
     def getRetries(self):

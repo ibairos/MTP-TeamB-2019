@@ -18,7 +18,7 @@ MODE = "testing"
 ENCODING = "UTF-8"
 
 CURRENT_DIRECTORY = os.getcwd()
-PROJECT_ROOT = CURRENT_DIRECTORY.split("/modes/")[0]
+PROJECT_ROOT = CURRENT_DIRECTORY.split("/code/")[0]
 
 IN_FILENAME_RAW = "utf-8.txt"
 IN_FILENAME_COMPRESSED = "utf-8.7z"
