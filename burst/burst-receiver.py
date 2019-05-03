@@ -187,7 +187,7 @@ def main():
                 send_packet(sender, b'ERROR')
                 print("    Packet number " + str(seq_num) + " received incorrectly")
         else:
-            encoding = bytes(rx_buffer).decode("utf-8")
+            encoding = bytes(rx_buffer).decode("utf-8").split("_EOT-")[1]
             if received_something(receiver):
                 receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
                 hash_bytes = rx_buffer
