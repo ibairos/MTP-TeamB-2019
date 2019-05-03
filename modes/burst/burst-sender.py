@@ -73,7 +73,7 @@ def initialize_radios(csn, ce, channel):
 def read_file_and_encoding(file_path):
     """ Gets the provided file and reads its content as bytes,
         after that, it stores everything in the variable payload_list,
-        which it returns. It also detects the encoding. """
+        which it returns. It also detects the testing. """
 
     global ENCODING
     payload_list = list()
@@ -81,7 +81,7 @@ def read_file_and_encoding(file_path):
     if os.path.isfile(file_path):
         print("Loading File in: " + file_path)
         raw_data = open(file_path, 'rb').read()
-        ENCODING = chardet.detect(raw_data)['encoding']
+        ENCODING = chardet.detect(raw_data)['testing']
         pos = 0
         while True:
             chunk = raw_data[pos:pos+DATA_SIZE]

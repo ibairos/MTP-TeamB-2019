@@ -103,7 +103,7 @@ def main():
         send_packet(sender, b"ENDOFTRANSMISSION")
         time.sleep(2)
         print("Sent HASH: " + str(bytes(hashlib.md5(repr(payload_list).encode('utf-8')).hexdigest().encode('utf-8'))))
-        print("Hash without encoding: " + str(hashlib.md5(repr(payload_list).encode('utf-8')).hexdigest()))
+        print("Hash without testing: " + str(hashlib.md5(repr(payload_list).encode('utf-8')).hexdigest()))
         send_packet(sender, bytes(hashlib.md5(repr(payload_list).encode('utf-8')).hexdigest().encode('utf-8')))
         print("End of transmission " + str(i))
         i = i + 1

@@ -142,10 +142,10 @@ def build_frame(payload):
 
 
 def detect_encoding(file):
-    """ Function that detects encoding and return it """
+    """ Function that detects testing and return it """
     raw_data = open(file, 'rb').read()
     result = chardet.detect(raw_data)
-    enc = result['encoding']
+    enc = result['testing']
     return enc
 
 
