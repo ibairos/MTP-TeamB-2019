@@ -186,22 +186,24 @@ def main():
                     ack = rx_buffer[CRC_SIZE + SEQ_NUM_SIZE:]
                     seq_ack = rx_buffer[CRC_SIZE:]
                     if check_crc(crc, seq_ack):
-                        if seq != seq_num:
-                            print("Received Out of Order ACK. Received: " + str(seq) + " Expecting: " + str(seq_num))
-                        elif bytes(ack) == b'ACK':
-                            retransmit = False
-                            print("Packet number " + str(seq_num) + " transmitted successfully")
-                            seq_num = seq_num + 1
-                        elif bytes(ack) == b'ERROR':
-                            print("        Packet number " + str(seq_num) + " transmitted incorrectly")
+                        if seq == seq_num:
+                            if bytes(ack) == b'ACK':
+                                retransmit = False
+                                print("Packet number " + str(seq_num) + " transmitted successfully")
+                                seq_num = seq_num + 1
+                            elif bytes(ack) == b'ERROR':
+                                print("        Packet number " + str(seq_num) + " transmitted incorrectly")
+                            else:
+                                print("        Unknown error when transmitting packet number " + str(seq_num))
                         else:
-                            print("        Unknown error when transmitting packet number " + str(seq_num))
+                            print("        Received Out of Order ACK. Received: " + str(seq) + " Expecting: " + str(seq_num))
                     else:
                         print("        Received incorrect ACK number " + str(seq_num))
                 else:
                     print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
-                    if attempt > 1000:
-                        exit("Program ended after trying to retransmit for more than 1000 times")
+
+                if attempt > 1000:
+                    exit("Program ended after trying to retransmit for more than 1000 times")
 
         retransmit_final = True
         attempt_final = 0

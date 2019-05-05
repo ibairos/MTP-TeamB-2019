@@ -170,6 +170,7 @@ def main():
                     print("Packet number " + str(seq_num) + " received successfully")
                     seq_num = seq_num + 1
                 elif seq == seq_num - 1:
+                    seq_num = seq_num - 1
                     send_packet(sender, build_frame(b'ACK', seq_num))
                     print("        ACK number " + str(seq_num - 1) + " was lost. Resending...")
                 else:
