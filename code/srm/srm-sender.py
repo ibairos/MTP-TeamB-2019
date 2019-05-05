@@ -21,7 +21,7 @@ import chardet
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 pipes = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [0xc2, 0xc2, 0xc2, 0xc2, 0xc2]]
-channels = [0xA0, 0x14]  # Channels 10 and 20
+channels = [30, 40]  # Channels 30 and 40
 
 # Define constants
 SENDER_CSN = 25
@@ -29,7 +29,7 @@ SENDER_CE = 0
 SENDER_CHANNEL = channels[0]  # Channel 10
 SENDER_PIPE = pipes[0]
 
-RECEIVER_CSN = 22
+RECEIVER_CSN = 24
 RECEIVER_CE = 1
 RECEIVER_CHANNEL = channels[1]  # Channel 20
 RECEIVER_PIPE = pipes[1]
