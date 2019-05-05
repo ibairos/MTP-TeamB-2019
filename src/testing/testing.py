@@ -33,6 +33,21 @@ OUT_FILEPATH_COMPRESSED = PROJECT_ROOT + "/files/output/" + MODE + "/compressed/
 COMPRESSION_LEVEL = 6
 
 
+def wait_for_hello(receiver):
+    """ This is a blocking function that waits
+    until we receive a HELLOACK message back or
+    the timeout expires. """
+
+    # Commented, since we do not use it
+    #  start_time = time.time()
+    #  while not receiver.available(RECEIVER_PIPE):
+    #      if time.time() - start_time < HELLO_TIMEOUT:
+    #          time.sleep(0.001)
+    #      else:
+    #          return False
+    #  return True
+
+
 def read_file(file_path):
     """ Gets the provided file and reads its content as bytes,
     after that, it stores everything in the variable payload_list,
@@ -157,6 +172,40 @@ def hash_raw_file(file_path):
     md5 = check_output(command, stderr=STDOUT, shell=True)
     result = md5.decode("utf-8").split(" ")[0]
     return result
+
+
+def hello(sender, receiver):
+    """ Function that sends HELLO messages
+    until we get a response """
+
+    hello_rcv = False
+    while not hello_rcv:
+        send_packet(sender, b'HELLO')
+        receiver.startListening()
+        if wait_for_hello(receiver):
+            hello_ack = []
+            receiver.read(hello_ack, receiver.getDynamicPayloadSize())
+            receiver.stopListening()
+            if bytes(hello_ack) == b'HELLOACK':
+                hello_rcv = True
+                print("Received HELLO ACK. Starting file transmission...")
+
+
+def hello_rx(sender, receiver):
+    """ Function that waits for the HELLO message
+    until we get one """
+
+    hello_rcv = False
+    while not hello_rcv:
+        receiver.startListening()
+        if wait_for_hello(receiver):
+            hello_syn = []
+            receiver.read(hello_syn, receiver.getDynamicPayloadSize())
+            receiver.stopListening()
+            if bytes(hello_syn) == b'HELLO':
+                send_packet(sender, b'HELLOACK')
+                hello_rcv = True
+                print("Received HELLO. Starting file reception...")
 
 
 def main():

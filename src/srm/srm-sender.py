@@ -37,7 +37,7 @@ SEQ_NUM_SIZE = 2  # Size of the seq number (2 bytes)
 DATA_SIZE = 28  # Size of the data chunks (28 bytes)
 CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
 
-ACK_TIMEOUT = 0.03  # Timeout for receiving the ACK (30 ms)
+ACK_TIMEOUT = 0.01  # Timeout for receiving the ACK (30 ms)
 HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLOACK message (10 ms)
 
 IN_FILEPATH = sys.argv[1]  # Filepath of the input file
@@ -104,26 +104,6 @@ def wait_for_ack(receiver):
     return True
 
 
-def wait_for_hello(receiver):
-    """ This is a blocking function that waits
-    until we receive a HELLOACK message back or
-    the timeout expires. """
-
-    start_time = time.time()
-    while not receiver.available(RECEIVER_PIPE):
-        if time.time() - start_time < HELLO_TIMEOUT:
-            time.sleep(0.001)
-        else:
-            return False
-    return True
-
-
-def send_packet(sender, payload):
-    """ Send the packet through the sender radio. """
-
-    sender.write(payload)
-
-
 def calculate_crc(payload):
     """ This is a function for calculating the crc
     and making sure it has the right length. """
@@ -134,38 +114,32 @@ def calculate_crc(payload):
     return crc_bytes
 
 
+def check_crc(crc, seq_payload):
+    """ Function that checks the CRC and returns the result """
+
+    crc_int = int.from_bytes(bytes(crc), 'big')
+
+    crc_payload = crc16.crc16xmodem(bytes(seq_payload))
+
+    if crc_int == crc_payload:
+        return True
+    else:
+        return False
+
+
 def build_frame(payload, seq_num):
     """ Function that builds the frame in bytes """
 
     seq = seq_num.to_bytes(SEQ_NUM_SIZE, byteorder='big')
     crc = calculate_crc(seq + payload)
 
-    return seq + payload + crc
+    return crc + seq + payload
 
 
-def detect_encoding(file):
-    """ Function that detects testing and return it """
-    raw_data = open(file, 'rb').read()
-    result = chardet.detect(raw_data)
-    enc = result['testing']
-    return enc
+def send_packet(sender, payload):
+    """ Send the packet through the sender radio. """
 
-
-def hello(sender, receiver):
-    """ Function that sends HELLO messages
-    until we get a response """
-
-    hello_rcv = False
-    while not hello_rcv:
-        send_packet(sender, b'HELLO')
-        receiver.startListening()
-        if wait_for_hello(receiver):
-            hello_ack = []
-            receiver.read(hello_ack, receiver.getDynamicPayloadSize())
-            receiver.stopListening()
-            if bytes(hello_ack) == b'HELLOACK':
-                hello_rcv = True
-                print("Received HELLO ACK. Starting file transmission...")
+    sender.write(payload)
 
 
 def main():
@@ -204,17 +178,24 @@ def main():
             while retransmit:
                 send_packet(sender, build_frame(payload, seq_num))
                 attempt = attempt + 1
-                ack = []
+                rx_buffer = []
                 if wait_for_ack(receiver):
-                    receiver.read(ack, receiver.getDynamicPayloadSize())
-                    if bytes(ack) == b'ACK':
-                        retransmit = False
-                        print("Packet number " + str(seq_num) + " transmitted successfully")
-                        seq_num = seq_num + 1
-                    elif bytes(ack) == b'ERROR':
-                        print("        Packet number " + str(seq_num) + " transmitted incorrectly")
+                    receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
+                    crc = rx_buffer[:CRC_SIZE]
+                    seq = int.from_bytes(rx_buffer[CRC_SIZE:CRC_SIZE + SEQ_NUM_SIZE], byteorder='big')
+                    ack = rx_buffer[CRC_SIZE + SEQ_NUM_SIZE:]
+                    seq_ack = rx_buffer[CRC_SIZE:]
+                    if check_crc(crc, seq_ack) and seq == seq_num:
+                        if bytes(ack) == b'ACK':
+                            retransmit = False
+                            print("Packet number " + str(seq_num) + " transmitted successfully")
+                            seq_num = seq_num + 1
+                        elif bytes(ack) == b'ERROR':
+                            print("        Packet number " + str(seq_num) + " transmitted incorrectly")
+                        else:
+                            print("        Unknown error when transmitting packet number " + str(seq_num))
                     else:
-                        print("        Unknown error when transmitting packet number " + str(seq_num))
+                        print("        Received incorrect ACK")
                 else:
                     print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
                     if attempt > 1000:
@@ -223,15 +204,20 @@ def main():
         retransmit_final = True
         attempt_final = 0
         while retransmit_final:
-            send_packet(sender, b'ENDOFTRANSMISSION')
+            send_packet(sender, build_frame(b'ENDOFTRANSMISSION', seq_num))
             attempt_final = attempt_final + 1
-            ack = []
+            rx_buffer = []
             if wait_for_ack(receiver):
-                receiver.read(ack, receiver.getDynamicPayloadSize())
-                if bytes(ack) == b'ACK':
-                    retransmit_final = False
-                    tx_success = True
-                    print("TRANSMISSION SUCCESSFUL")
+                receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
+                crc = rx_buffer[:CRC_SIZE]
+                seq = int.from_bytes(rx_buffer[CRC_SIZE:CRC_SIZE + SEQ_NUM_SIZE], byteorder='big')
+                ack = rx_buffer[CRC_SIZE + SEQ_NUM_SIZE:]
+                seq_ack = rx_buffer[CRC_SIZE:]
+                if check_crc(crc, seq_ack) and seq == seq_num:
+                    if bytes(ack) == b'ACK':
+                        retransmit_final = False
+                        tx_success = True
+                        print("TRANSMISSION SUCCESSFUL")
             else:
                 print("    Attempt " + str(attempt_final) + " to retransmit FINAL packet")
                 if attempt_final > 1000:

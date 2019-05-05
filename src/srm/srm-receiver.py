@@ -64,6 +64,14 @@ def initialize_radios(csn, ce, channel):
     return radio
 
 
+def write_file(file_path, payload_list):
+    """ Function that stores the file in memory """
+
+    with open(file_path, "wb") as f:
+        for chunk in payload_list:
+            f.write(chunk)
+
+
 def wait_for_data(receiver):
     """ This is a blocking function that waits
     until the ACK is available in the receiver pipe
@@ -78,24 +86,14 @@ def wait_for_data(receiver):
     return True
 
 
-def wait_for_hello(receiver):
-    """ This is a blocking function that waits
-    until we receive a HELLO message or the
-    timeout expires. """
+def calculate_crc(payload):
+    """ This is a function for calculating the crc
+    and making sure it has the right length. """
 
-    start_time = time.time()
-    while not receiver.available(RECEIVER_PIPE):
-        if time.time() - start_time < HELLO_TIMEOUT:
-            time.sleep(0.001)
-        else:
-            return False
-    return True
+    crc = crc16.crc16xmodem(payload)
+    crc_bytes = crc.to_bytes(CRC_SIZE, byteorder='big')
 
-
-def send_packet(sender, payload):
-    """ Send the packet through the sender radio. """
-
-    sender.write(payload)
+    return crc_bytes
 
 
 def check_crc(crc, seq_payload):
@@ -111,29 +109,19 @@ def check_crc(crc, seq_payload):
         return False
 
 
-def write_file(file_path, payload_list):
-    """ Function that stores the file in memory """
+def build_frame(payload, seq_num):
+    """ Function that builds the frame in bytes """
 
-    with open(file_path, "wb") as f:
-        for chunk in payload_list:
-            f.write(chunk)
+    seq = seq_num.to_bytes(SEQ_NUM_SIZE, byteorder='big')
+    crc = calculate_crc(seq + payload)
+
+    return crc + seq + payload
 
 
-def hello(sender, receiver):
-    """ Function that waits for the HELLO message
-    until we get one """
+def send_packet(sender, payload):
+    """ Send the packet through the sender radio. """
 
-    hello_rcv = False
-    while not hello_rcv:
-        receiver.startListening()
-        if wait_for_hello(receiver):
-            hello_syn = []
-            receiver.read(hello_syn, receiver.getDynamicPayloadSize())
-            receiver.stopListening()
-            if bytes(hello_syn) == b'HELLO':
-                send_packet(sender, b'HELLOACK')
-                hello_rcv = True
-                print("Received HELLO. Starting file reception...")
+    sender.write(payload)
 
 
 def main():
@@ -170,28 +158,27 @@ def main():
                 receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
                 received_something = True
 
-        receiver.stopListening()
-        if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
-            seq = int.from_bytes(rx_buffer[:SEQ_NUM_SIZE], byteorder='big')
-            seq_payload = rx_buffer[:SEQ_NUM_SIZE + DATA_SIZE]
-            payload = rx_buffer[SEQ_NUM_SIZE:SEQ_NUM_SIZE + DATA_SIZE]
-            crc = rx_buffer[SEQ_NUM_SIZE + DATA_SIZE:]
+        payload = rx_buffer[CRC_SIZE + SEQ_NUM_SIZE:]
+        if bytes(payload) != b'ENDOFTRANSMISSION':
+            crc = rx_buffer[:CRC_SIZE]
+            seq = int.from_bytes(rx_buffer[CRC_SIZE:CRC_SIZE + SEQ_NUM_SIZE], byteorder='big')
+            seq_payload = rx_buffer[CRC_SIZE:]
             if check_crc(crc, seq_payload):
                 if seq == seq_num:
-                    send_packet(sender, b'ACK')
+                    send_packet(sender, build_frame(b'ACK', seq_num))
                     payload_list.append(bytes(payload))
                     seq_num = seq_num + 1
                     print("Packet number " + str(seq_num) + " received successfully")
                 elif seq == seq_num - 1:
-                    send_packet(sender, b'ACK')
+                    send_packet(sender, build_frame(b'ACK', seq_num))
                     print("        ACK number " + str(seq_num) + " was lost. Resending...")
                 else:
                     print("        Receiver out of order packet. Received: " + str(seq) + " Expecting: " + str(seq_num))
             else:
-                send_packet(sender, b'ERROR')
+                send_packet(sender, build_frame(b'ERROR', seq_num))
                 print("    Packet number " + str(seq_num) + " received incorrectly")
         else:
-            send_packet(sender, b'ACK')
+            send_packet(sender, build_frame(b'ACK', seq_num))
             rx_success = True
             print("RECEPTION SUCCESSFUL")
 
