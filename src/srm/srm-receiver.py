@@ -168,11 +168,14 @@ def main():
                     send_packet(sender, build_frame(b'ACK', seq_num))
                     payload_list.append(bytes(payload))
                     print("Packet number " + str(seq_num) + " received successfully")
+                elif seq == seq_num + 1:
                     seq_num = seq_num + 1
-                elif seq == seq_num - 1:
-                    seq_num = seq_num - 1
                     send_packet(sender, build_frame(b'ACK', seq_num))
+                    payload_list.append(bytes(payload))
+                    print("Packet number " + str(seq_num) + " received successfully")
+                elif seq == seq_num - 1:
                     print("        ACK number " + str(seq_num - 1) + " was lost. Resending...")
+                    send_packet(sender, build_frame(b'ACK', seq_num))
                 else:
                     print("        Receiver out of order packet. Received: " + str(seq) + " Expecting: " + str(seq_num))
             else:
