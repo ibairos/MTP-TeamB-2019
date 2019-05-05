@@ -194,7 +194,6 @@ def main():
             send_packet(sender, b'ACK')
             rx_success = True
             print("RECEPTION SUCCESSFUL")
-        receiver.startListening()
 
     write_file(OUT_FILEPATH, payload_list)
 

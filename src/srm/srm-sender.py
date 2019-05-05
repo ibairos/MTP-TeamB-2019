@@ -191,6 +191,7 @@ def main():
     payload_list = read_file(IN_FILEPATH)
 
     # Initialize loop variables and functions
+    receiver.startListening()
     tx_success = False
     seq_num = 1
 
@@ -201,9 +202,7 @@ def main():
             retransmit = True
             attempt = 0
             while retransmit:
-                receiver.flush_rx()
                 send_packet(sender, build_frame(payload, seq_num))
-                receiver.startListening()
                 attempt = attempt + 1
                 ack = []
                 if wait_for_ack(receiver):
@@ -212,17 +211,19 @@ def main():
                         retransmit = False
                         print("Packet number " + str(seq_num) + " transmitted successfully")
                         seq_num = seq_num + 1
+                    elif bytes(ack) == b'ERROR':
+                        print("        Packet number " + str(seq_num) + " transmitted incorrectly")
+                    else:
+                        print("        Unknown error when transmitting packet number " + str(seq_num))
                 else:
                     print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
                     if attempt > 1000:
                         exit("Program ended after trying to retransmit for more than 1000 times")
-                receiver.stopListening()
 
         retransmit_final = True
         attempt_final = 0
         while retransmit_final:
             send_packet(sender, b'ENDOFTRANSMISSION')
-            receiver.startListening()
             attempt_final = attempt_final + 1
             ack = []
             if wait_for_ack(receiver):
