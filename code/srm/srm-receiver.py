@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 #
 # Receiver part for the Short Range Mode competition of Team B
 # This version uses STOP&WAIT with timeout if the ACK is not received
@@ -32,10 +31,11 @@ RECEIVER_CE = 1
 RECEIVER_CHANNEL = channels[0]  # Channel 10
 RECEIVER_PIPE = pipes[0]
 
-DATA_SIZE = 30  # Size of the data chunks (30 bytes)
+DATA_SIZE = 28  # Size of the data chunks (28 bytes)
+SEQ_NUM_SIZE = 2  # Size of the seq number (2 bytes)
 CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
 
-DATA_TIMEOUT = 0.01  # Timeout for receiving the DATA after the ACK is sent (10 ms)
+DATA_TIMEOUT = 0.03  # Timeout for receiving the data
 HELLO_TIMEOUT = 0.01  # Timeout for receiving the HELLO message (10 ms)
 
 OUT_FILEPATH = sys.argv[1]  # Filepath of the output file
@@ -169,18 +169,22 @@ def main():
             if wait_for_data(receiver):
                 receiver.read(rx_buffer, receiver.getDynamicPayloadSize())
                 received_something = True
-            elif len(payload_list) != 0:
-                send_packet(sender, b'ACK')
 
         receiver.stopListening()
         if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
-            crc = rx_buffer[:CRC_SIZE]
-            payload = rx_buffer[CRC_SIZE:]
+            seq = int.from_bytes(rx_buffer[:SEQ_NUM_SIZE], byteorder='big')
+            crc = rx_buffer[SEQ_NUM_SIZE:CRC_SIZE]
+            payload = rx_buffer[SEQ_NUM_SIZE + CRC_SIZE:]
             if check_crc(crc, payload):
-                send_packet(sender, b'ACK')
-                payload_list.append(bytes(payload))
-                seq_num = seq_num + 1
-                print("Packet number " + str(seq_num) + " received successfully")
+                if seq == seq_num:
+                    send_packet(sender, b'ACK')
+                    payload_list.append(bytes(payload))
+                    seq_num = seq_num + 1
+                    print("Packet number " + str(seq_num) + " received successfully")
+                elif seq == seq_num - 1:
+                    send_packet(sender, b'ACK')
+                else:
+                    print("        Receiver out of order packet. Received: " + str(seq) + " Expecting: " + str(seq_num))
             else:
                 send_packet(sender, b'ERROR')
                 print("    Packet number " + str(seq_num) + " received incorrectly")
