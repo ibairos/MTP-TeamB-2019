@@ -98,12 +98,12 @@ def send_packet(sender, payload):
     sender.write(payload)
 
 
-def check_crc(crc, payload):
+def check_crc(crc, seq_payload):
     """ Function that checks the CRC and returns the result """
 
-    crc_int = int.from_bytes(crc, 'big')
+    crc_int = int.from_bytes(bytes(crc), 'big')
 
-    crc_payload = crc16.crc16xmodem(bytes(payload))
+    crc_payload = crc16.crc16xmodem(bytes(seq_payload))
 
     if crc_int == crc_payload:
         return True
@@ -173,9 +173,10 @@ def main():
         receiver.stopListening()
         if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
             seq = int.from_bytes(rx_buffer[:SEQ_NUM_SIZE], byteorder='big')
+            seq_payload = rx_buffer[:SEQ_NUM_SIZE + DATA_SIZE]
             payload = rx_buffer[SEQ_NUM_SIZE:SEQ_NUM_SIZE + DATA_SIZE]
             crc = rx_buffer[SEQ_NUM_SIZE + DATA_SIZE:]
-            if check_crc(crc, payload):
+            if check_crc(crc, seq_payload):
                 if seq == seq_num:
                     send_packet(sender, b'ACK')
                     payload_list.append(bytes(payload))
