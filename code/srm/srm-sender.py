@@ -33,8 +33,8 @@ RECEIVER_CE = 1
 RECEIVER_CHANNEL = channels[1]  # Channel 20
 RECEIVER_PIPE = pipes[1]
 
-DATA_SIZE = 28  # Size of the data chunks (28 bytes)
 SEQ_NUM_SIZE = 2  # Size of the seq number (2 bytes)
+DATA_SIZE = 28  # Size of the data chunks (28 bytes)
 CRC_SIZE = 2  # Size of the CRC in bytes (2 bytes)
 
 ACK_TIMEOUT = 0.03  # Timeout for receiving the ACK (30 ms)
@@ -137,10 +137,10 @@ def calculate_crc(payload):
 def build_frame(payload, seq_num):
     """ Function that builds the frame in bytes """
 
-    crc = calculate_crc(payload)
     seq = seq_num.to_bytes(SEQ_NUM_SIZE, byteorder='big')
+    crc = calculate_crc(seq + payload)
 
-    return seq + crc + payload
+    return seq + payload + crc
 
 
 def detect_encoding(file):

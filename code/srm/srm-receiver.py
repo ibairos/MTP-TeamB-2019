@@ -173,8 +173,8 @@ def main():
         receiver.stopListening()
         if bytes(rx_buffer) != b"ENDOFTRANSMISSION":
             seq = int.from_bytes(rx_buffer[:SEQ_NUM_SIZE], byteorder='big')
-            crc = rx_buffer[SEQ_NUM_SIZE:CRC_SIZE]
-            payload = rx_buffer[SEQ_NUM_SIZE + CRC_SIZE:]
+            payload = rx_buffer[SEQ_NUM_SIZE:SEQ_NUM_SIZE + DATA_SIZE]
+            crc = rx_buffer[SEQ_NUM_SIZE + DATA_SIZE:]
             if check_crc(crc, payload):
                 if seq == seq_num:
                     send_packet(sender, b'ACK')
@@ -183,6 +183,7 @@ def main():
                     print("Packet number " + str(seq_num) + " received successfully")
                 elif seq == seq_num - 1:
                     send_packet(sender, b'ACK')
+                    print("        ACK number " + str(seq_num) + " was lost. Resending...")
                 else:
                     print("        Receiver out of order packet. Received: " + str(seq) + " Expecting: " + str(seq_num))
             else:
