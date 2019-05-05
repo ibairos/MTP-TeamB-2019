@@ -185,8 +185,10 @@ def main():
                     seq = int.from_bytes(rx_buffer[CRC_SIZE:CRC_SIZE + SEQ_NUM_SIZE], byteorder='big')
                     ack = rx_buffer[CRC_SIZE + SEQ_NUM_SIZE:]
                     seq_ack = rx_buffer[CRC_SIZE:]
-                    if check_crc(crc, seq_ack) and seq == seq_num:
-                        if bytes(ack) == b'ACK':
+                    if check_crc(crc, seq_ack):
+                        if seq != seq_num:
+                            print("Received Out of Order ACK. Received: " + str(seq) + " Expecting: " + str(seq_num))
+                        elif bytes(ack) == b'ACK':
                             retransmit = False
                             print("Packet number " + str(seq_num) + " transmitted successfully")
                             seq_num = seq_num + 1
@@ -195,7 +197,7 @@ def main():
                         else:
                             print("        Unknown error when transmitting packet number " + str(seq_num))
                     else:
-                        print("        Received incorrect ACK")
+                        print("        Received incorrect ACK number " + str(seq_num))
                 else:
                     print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
                     if attempt > 1000:
