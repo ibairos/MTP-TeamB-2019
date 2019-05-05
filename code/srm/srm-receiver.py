@@ -103,7 +103,7 @@ def check_crc(crc, payload):
 
     crc_int = int.from_bytes(crc, 'big')
 
-    crc_payload = crc16.crc16xmodem(payload)
+    crc_payload = crc16.crc16xmodem(bytes(payload))
 
     if crc_int == crc_payload:
         return True
