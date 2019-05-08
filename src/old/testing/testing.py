@@ -77,16 +77,6 @@ def list_dir(rel_path):
     return dirs
 
 
-def compress_file(in_file_path, out_file_path):
-    command = '7z a -mx=' + str(COMPRESSION_LEVEL) + " " + out_file_path + " " + in_file_path
-    result = check_output(command, stderr=STDOUT, shell=True)
-    ok_string = b'Everything is Ok'
-    if ok_string in result:
-        return True
-    else:
-        return False
-
-
 def read_file_and_encoding(file_path):
 
     payload_list = list()
@@ -174,68 +164,29 @@ def hash_raw_file(file_path):
     return result
 
 
-def hello(sender, receiver):
-    """ Function that sends HELLO messages
-    until we get a response """
-
-    hello_rcv = False
-    while not hello_rcv:
-        send_packet(sender, b'HELLO')
-        receiver.startListening()
-        if wait_for_hello(receiver):
-            hello_ack = []
-            receiver.read(hello_ack, receiver.getDynamicPayloadSize())
-            receiver.stopListening()
-            if bytes(hello_ack) == b'HELLOACK':
-                hello_rcv = True
-                print("Received HELLO ACK. Starting file transmission...")
+def compress_file(in_file_path, out_file_path):
+    command = "7z a -mx=" + str(COMPRESSION_LEVEL) + " " + out_file_path + " " + in_file_path
+    result = check_output(command, stderr=STDOUT, shell=True)
+    ok_string = b'Everything is Ok'
+    if ok_string in result:
+        return True
+    else:
+        return False
 
 
-def hello_rx(sender, receiver):
-    """ Function that waits for the HELLO message
-    until we get one """
-
-    hello_rcv = False
-    while not hello_rcv:
-        receiver.startListening()
-        if wait_for_hello(receiver):
-            hello_syn = []
-            receiver.read(hello_syn, receiver.getDynamicPayloadSize())
-            receiver.stopListening()
-            if bytes(hello_syn) == b'HELLO':
-                send_packet(sender, b'HELLOACK')
-                hello_rcv = True
-                print("Received HELLO. Starting file reception...")
+def uncompress_file(in_file_path, out_file_path):
+    command = "7z o -o" + out_file_path + " " + in_file_path
+    result = check_output(command, stderr=STDOUT, shell=True)
+    ok_string = b'Everything is Ok'
+    if ok_string in result:
+        return True
+    else:
+        return False
 
 
 def main():
 
-    hash_raw_file(IN_FILEPATH_RAW)
-
     compress_file(IN_FILEPATH_RAW, IN_FILEPATH_COMPRESSED)
-
-    payload_list_raw = read_file_and_encoding(IN_FILEPATH_RAW)
-    payload_list_compressed = read_file_and_encoding(IN_FILEPATH_COMPRESSED)
-
-    print("CP")
-
-    payload_list = payload_list_raw
-
-    received_frames = list()
-
-    for payload in payload_list:
-        data = receive_frame(build_frame(payload))
-        if data is not None:
-            received_frames.append(data)
-        else:
-            print("FAILED")
-
-    if received_frames == payload_list:
-        print("SUCCESS")
-        print(calculate_hash(payload_list, ENCODING))
-        print(calculate_hash(received_frames, ENCODING))
-    else:
-        print("FAILURE")
 
 
 if __name__ == '__main__':
