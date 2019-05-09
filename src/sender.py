@@ -44,7 +44,7 @@ class Sender(object):
 
         # Read file
         util.compress_file(self.config)
-        payload_list = util.read_file(self.config.IN_FILEPATH_COMPRESSED)
+        payload_list = util.read_file(self.config, self.config.IN_FILEPATH_COMPRESSED)
 
         # Initialize loop variables and functions
         self.receiver.startListening()

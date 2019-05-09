@@ -71,7 +71,7 @@ def check_crc(crc, seq_payload):
 #    FILE I/O UTILS    #
 ########################
 
-def read_file(file_path, config):
+def read_file(config, file_path):
     """ Gets the provided file and reads its content as bytes,
     after that, it stores everything in the variable payload_list,
     which it returns. """
