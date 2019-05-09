@@ -70,11 +70,10 @@ class Receiver(object):
                         if seq_num == 1:
                             payload_list.append(bytes(payload))
                             print("Packet number " + str(seq_num) + " received successfully")
-                            seq_num = seq_num + 1
                     elif seq == seq_num + 1:
                         seq_num = seq_num + 1
-                        util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                         payload_list.append(bytes(payload))
+                        util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                         print("Packet number " + str(seq_num) + " received successfully")
                     elif seq == seq_num - 1:
                         print("        ACK number " + str(seq_num - 1) + " was lost. Resending...")
