@@ -1,16 +1,15 @@
+from libraries.lib_nrf24 import NRF24
 
-SENDER_CSN = 25
-SENDER_CE = 0
-RECEIVER_CSN = 24
-RECEIVER_CE = 1
-
+# Packet size parameters
 DATA_SIZE = 28
 SEQ_NUM_SIZE = 2
 CRC_SIZE = 2
 
+# Timeouts
 DATA_TIMEOUT = 0.01
 ACK_TIMEOUT = 0.01
 
+# Compression
 COMPRESSION_LEVEL = 6
 
 # Out Filepath (Used only by receiver)
@@ -35,3 +34,13 @@ SENDER_PIPE = pipes[1]
 
 RECEIVER_CHANNEL = channels[0]
 RECEIVER_PIPE = pipes[0]
+
+# Radio parameters
+SENDER_CSN = 25
+SENDER_CE = 0
+RECEIVER_CSN = 22
+RECEIVER_CE = 1
+
+# Power and bitrate
+POWER = NRF24.PA_HIGH
+BITRATE = NRF24.BR_2MBPS

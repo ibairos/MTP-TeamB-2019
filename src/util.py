@@ -11,7 +11,7 @@ from subprocess import check_output, STDOUT
 #    RADIO MANAGEMENT    #
 ##########################
 
-def initialize_radios(csn, ce, channel):
+def initialize_radios(csn, ce, channel, config):
     """ This function initializes the radios, each
     radio being the NRF24 transceivers.
 
@@ -25,8 +25,8 @@ def initialize_radios(csn, ce, channel):
     radio.setPayloadSize(32)
     radio.setChannel(channel)
 
-    radio.setDataRate(NRF24.BR_250KBPS)
-    radio.setPALevel(NRF24.PA_MIN)
+    radio.setDataRate(config.BITRATE)
+    radio.setPALevel(config.POWER)
     radio.setAutoAck(False)
     radio.enableDynamicPayloads()
     radio.enableAckPayload()

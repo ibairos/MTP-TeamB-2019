@@ -7,9 +7,6 @@
 # Version: 1.0
 
 
-
-import os
-import sys
 import time
 import RPi.GPIO as GPIO
 from threading import Thread
@@ -45,13 +42,13 @@ def init_radios(config):
     global SENDER, RECEIVER
     
     # Initialize the sender radio and print details
-    SENDER = util.initialize_radios(config.SENDER_CE, config.SENDER_CSN, config.SENDER_CHANNEL)
+    SENDER = util.initialize_radios(config.SENDER_CE, config.SENDER_CSN, config.SENDER_CHANNEL, config)
     SENDER.openWritingPipe(config.SENDER_PIPE)
     print("Sender Information")
     SENDER.printDetails()
 
     # Initialize the receiver radio and print details
-    RECEIVER = util.initialize_radios(config.RECEIVER_CE, config.RECEIVER_CSN, config.RECEIVER_CHANNEL)
+    RECEIVER = util.initialize_radios(config.RECEIVER_CE, config.RECEIVER_CSN, config.RECEIVER_CHANNEL, config)
     RECEIVER.openReadingPipe(0, config.RECEIVER_PIPE)
     print("Receiver Information")
     RECEIVER.printDetails()
