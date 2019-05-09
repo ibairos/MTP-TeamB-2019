@@ -67,7 +67,7 @@ class Receiver(object):
                 if util.check_crc(crc, seq_payload):
                     if seq == seq_num:
                         util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
-                        if seq_num == 1:
+                        if seq_num == 1 and len(payload_list) == 0:
                             payload_list.append(bytes(payload))
                             print("Packet number " + str(seq_num) + " received successfully")
                     elif seq == seq_num + 1:
@@ -75,9 +75,6 @@ class Receiver(object):
                         payload_list.append(bytes(payload))
                         util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                         print("Packet number " + str(seq_num) + " received successfully")
-                    elif seq == seq_num - 1:
-                        print("        ACK number " + str(seq_num - 1) + " was lost. Resending...")
-                        util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                     else:
                         print("        Receiver out of order packet. Rcv: " + str(seq) + " Exp: " + str(seq_num + 1))
                 else:
