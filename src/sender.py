@@ -34,7 +34,7 @@ class Sender(object):
         """ Function that builds the frame in bytes """
 
         seq = seq_num.to_bytes(self.config.SEQ_NUM_SIZE, byteorder='big')
-        crc = util.calculate_crc(seq + payload)
+        crc = util.calculate_crc(self.config, seq + payload)
 
         return crc + seq + payload
 
