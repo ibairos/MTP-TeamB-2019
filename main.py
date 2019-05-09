@@ -24,6 +24,9 @@ from conf import conf_general
 
 from const import mode, role
 
+# Sleeping for 10 secs until system wakes up
+time.sleep(10)
+
 # Initialization
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -122,7 +125,12 @@ def select_conf():
 
 
 def start_tx_rx_blink():
-    blink_thread = Thread(target=blink, args=(conf_general.BLINK_PERIOD,))
+    blink_thread = Thread(target=blink, args=(conf_general.TX_RX_BLINK_PERIOD,))
+    blink_thread.start()
+
+
+def start_wait_blink():
+    blink_thread = Thread(target=blink, args=(conf_general.WAIT_BLINK_PERIOD,))
     blink_thread.start()
 
 
