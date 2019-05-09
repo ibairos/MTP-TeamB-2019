@@ -28,7 +28,6 @@ from const import mode, role
 time.sleep(10)
 
 # Initialization
-GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
