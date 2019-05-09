@@ -28,6 +28,7 @@ from const import mode, role
 time.sleep(10)
 
 # Initialization
+GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
@@ -167,6 +168,8 @@ def main():
         device = Receiver(config_file, SENDER, RECEIVER)
     else:
         exit(0)
+
+    start_wait_blink()
 
     while not GO:
         go_sw = GPIO.input(conf_general.SW_GO)
