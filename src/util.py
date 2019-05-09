@@ -115,7 +115,7 @@ def compress_file(config):
 
 
 def uncompress_file(config):
-    command = "7z o -o" + config.OUT_PATH_RAW + " " + config.OUT_FILEPATH_COMPRESSED
+    command = "7z x -o" + config.OUT_PATH_RAW + " " + config.OUT_FILEPATH_COMPRESSED
     result = check_output(command, stderr=STDOUT, shell=True)
     ok_string = b'Everything is Ok'
     if ok_string in result:

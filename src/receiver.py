@@ -65,7 +65,7 @@ class Receiver(object):
                     byteorder='big')
                 seq_payload = rx_buffer[self.config.CRC_SIZE:]
                 if util.check_crc(crc, seq_payload):
-                    if seq == seq_num:
+                    if seq == seq_num and seq_num == 1:
                         util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                         payload_list.append(bytes(payload))
                         print("Packet number " + str(seq_num) + " received successfully")
