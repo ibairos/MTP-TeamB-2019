@@ -158,8 +158,13 @@ def set_success_led():
     GPIO.output(conf_general.LED_TX_ROLE, 1)
 
 
+def set_error_led():
+    GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
+    GPIO.output(conf_general.LED_TX_ROLE, 0)
+
+
 def main():
-    global GO
+    global GO, TX_SUCCESS
 
     setup_gpio()
 
@@ -201,9 +206,12 @@ def main():
     else:
         exit(0)
 
+    GO = False
     if success:
-        GO = False
+        TX_SUCCESS = True
         set_success_led()
+    else:
+        set_error_led()
 
 
 if __name__ == '__main__':
