@@ -13,12 +13,19 @@ ACK_TIMEOUT = 0.01
 
 COMPRESSION_LEVEL = 6
 
+# Input Filepath (Only used by sender)
 IN_PATH_RAW = "/home/pi/MTP-TeamB-2019/files/input/srm/raw/"
 IN_PATH_COMPRESSED = "/home/pi/MTP-TeamB-2019/files/input/srm/compressed/"
 DEFAULT_FILENAME_RAW = "file.txt"
 DEFAULT_FILENAME_COMPRESSED = "file.7z"
 IN_FILEPATH_RAW = IN_PATH_RAW + DEFAULT_FILENAME_RAW
 IN_FILEPATH_COMPRESSED = IN_PATH_COMPRESSED + DEFAULT_FILENAME_COMPRESSED
+
+# Output Filepath (Just for compatibility)
+OUT_PATH_RAW = "/home/pi/MTP-TeamB-2019/files/output/srm/raw/"
+OUT_PATH_COMPRESSED = "/home/pi/MTP-TeamB-2019/files/output/srm/compressed/"
+OUT_FILEPATH_RAW = OUT_PATH_RAW + DEFAULT_FILENAME_RAW
+OUT_FILEPATH_COMPRESSED = OUT_PATH_COMPRESSED + DEFAULT_FILENAME_COMPRESSED
 
 channels = [30, 40]
 pipes = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [0xc2, 0xc2, 0xc2, 0xc2, 0xc2]]
