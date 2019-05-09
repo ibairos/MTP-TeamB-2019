@@ -126,17 +126,25 @@ def select_conf():
 
 
 def start_tx_rx_blink():
-    blink_thread = Thread(target=blink, args=(conf_general.TX_RX_BLINK_PERIOD,))
+    blink_thread = Thread(target=blink_tx_rx, args=(conf_general.TX_RX_BLINK_PERIOD,))
     blink_thread.start()
 
 
 def start_wait_blink():
-    blink_thread = Thread(target=blink, args=(conf_general.WAIT_BLINK_PERIOD,))
+    blink_thread = Thread(target=blink_wait, args=(conf_general.WAIT_BLINK_PERIOD,))
     blink_thread.start()
 
 
-def blink(blink_period):
+def blink_tx_rx(blink_period):
     while GO:
+        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+        time.sleep(blink_period)
+        GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
+        time.sleep(blink_period)
+
+
+def blink_wait(blink_period):
+    while not GO:
         GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
         time.sleep(blink_period)
         GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
