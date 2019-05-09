@@ -146,7 +146,14 @@ def get_compressed_filepath(config):
 def clear_outputs(config):
     try:
         os.remove(config.OUT_FILEPATH_COMPRESSED)
-        os.remove(config.OUT_FILEPATH_RAW)
-        return True
     except IOError:
-        return False
+        print()
+    try:
+        os.remove(config.OUT_FILEPATH_RAW)
+    except IOError:
+        print()
+    try:
+        os.remove(config.IN_FILEPATH_COMPRESSED)
+    except IOError:
+        print()
+    return True
