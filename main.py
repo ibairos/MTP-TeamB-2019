@@ -24,8 +24,6 @@ from conf import conf_general
 
 from const import mode, role
 
-# Sleeping for 10 secs until system wakes up
-time.sleep(10)
 
 # Initialization
 GPIO.setmode(GPIO.BCM)
