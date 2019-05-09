@@ -39,6 +39,7 @@ MODE = mode.NONE
 ROLE = role.NONE
 
 GO = False
+TX_SUCCESS = False
 
 
 def init_radios(config):
@@ -84,6 +85,10 @@ def setup_gpio():
     GPIO.setup(conf_general.LED_RX_ROLE, GPIO.OUT)
     GPIO.setup(conf_general.LED_TX_ROLE, GPIO.OUT)
     GPIO.setup(conf_general.LED_TX_RX_PROCESS, GPIO.OUT)
+    # Setting up LEDs to off
+    GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
+    GPIO.output(conf_general.LED_TX_ROLE, 0)
+    GPIO.output(conf_general.LED_RX_ROLE, 0)
 
 
 def select_conf():
@@ -143,7 +148,7 @@ def blink_tx_rx(blink_period):
 
 
 def blink_wait(blink_period):
-    while not GO:
+    while not TX_SUCCESS and not GO:
         GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
         time.sleep(blink_period)
         GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
