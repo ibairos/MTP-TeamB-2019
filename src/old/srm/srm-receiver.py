@@ -164,7 +164,7 @@ def main():
             seq = int.from_bytes(rx_buffer[CRC_SIZE:CRC_SIZE + SEQ_NUM_SIZE], byteorder='big')
             seq_payload = rx_buffer[CRC_SIZE:]
             if check_crc(crc, seq_payload):
-                if seq == seq_num:
+                if seq == seq_num and seq_num == 1:
                     send_packet(sender, build_frame(b'ACK', seq_num))
                     payload_list.append(bytes(payload))
                     print("Packet number " + str(seq_num) + " received successfully")
