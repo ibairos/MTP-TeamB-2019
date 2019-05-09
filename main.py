@@ -136,6 +136,7 @@ def blink(blink_period):
 
 def set_success_led():
     GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+    GPIO.output(conf_general.LED_TX_ROLE, 1)
 
 
 def main():
@@ -180,6 +181,7 @@ def main():
         exit(0)
 
     if success:
+        GO = False
         set_success_led()
 
 

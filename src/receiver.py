@@ -89,10 +89,13 @@ class Receiver(object):
         # Save and uncompress file
         try:
             util.write_file(self.config.OUT_FILEPATH_COMPRESSED, payload_list)
-            util.uncompress_file(self.config)
+            uncompress_success = util.uncompress_file(self.config)
         except IOError:
             print("ERROR when saving the file")
             return False
 
-        # Return true if successful
-        return True
+        if uncompress_success:
+            # Return true if successful
+            return True
+        else:
+            return False

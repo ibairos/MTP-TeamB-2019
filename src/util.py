@@ -4,7 +4,7 @@ import spidev
 import time
 import os
 import crc16
-from subprocess import check_output, STDOUT
+from subprocess import check_output, STDOUT, CalledProcessError
 
 
 ##########################
@@ -116,7 +116,10 @@ def compress_file(config):
 
 def uncompress_file(config):
     command = "7z x -o" + config.OUT_PATH_RAW + " " + config.OUT_FILEPATH_COMPRESSED
-    result = check_output(command, stderr=STDOUT, shell=True)
+    try:
+        result = check_output(command, stderr=STDOUT, shell=True)
+    except CalledProcessError:
+        return False
     ok_string = b'Everything is Ok'
     if ok_string in result:
         return True
