@@ -84,6 +84,7 @@ class Receiver(object):
                     util.send_packet(self.sender, self.build_frame(b'ERROR', seq_num))
                     print("    Packet number " + str(seq_num) + " received incorrectly")
             else:
+                seq_num = seq_num + 1
                 util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                 rx_success = True
                 print("RECEPTION SUCCESSFUL")
