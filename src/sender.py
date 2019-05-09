@@ -84,10 +84,12 @@ class Sender(object):
                         else:
                             print("        Received incorrect ACK number " + str(seq_num))
                     else:
-                        print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
+                        if not (seq_num == 1 and attempt != 1):
+                            print("    Attempt " + str(attempt) + " to retransmit packet number " + str(seq_num))
 
-                    if attempt > 1000:
-                        exit("Program ended after trying to retransmit for more than 1000 times")
+                    if attempt > 1000 and seq_num > 1:
+                        print("Transmission ended after trying to retransmit for more than 1000 times")
+                        return False
 
             retransmit_final = True
             attempt_final = 0
@@ -111,7 +113,8 @@ class Sender(object):
                 else:
                     print("    Attempt " + str(attempt_final) + " to retransmit FINAL packet")
                     if attempt_final > 1000:
-                        exit("Program ended after failing to transmit the EOT message")
+                        print("Program ended after failing to transmit the EOT message")
+                        return False
 
         # Return true if success
         return True
