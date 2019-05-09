@@ -8,7 +8,7 @@
 # Version: 1.1
 
 import time
-import util
+from src import util
 
 
 class Receiver(object):
@@ -34,7 +34,7 @@ class Receiver(object):
         """ Function that builds the frame in bytes """
 
         seq = seq_num.to_bytes(self.config.SEQ_NUM_SIZE, byteorder='big')
-        crc = util.calculate_crc(seq + payload)
+        crc = util.calculate_crc(self.config, seq + payload)
 
         return crc + seq + payload
 
@@ -78,7 +78,7 @@ class Receiver(object):
                         print("        ACK number " + str(seq_num - 1) + " was lost. Resending...")
                         util.send_packet(self.sender, self.build_frame(b'ACK', seq_num))
                     else:
-                        print("        Receiver out of order packet. Received: " + str(seq) + " Expecting: " + str(seq_num))
+                        print("        Receiver out of order packet. Rcv: " + str(seq) + " Exp: " + str(seq_num))
                 else:
                     util.send_packet(self.sender, self.build_frame(b'ERROR', seq_num))
                     print("    Packet number " + str(seq_num) + " received incorrectly")

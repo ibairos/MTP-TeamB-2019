@@ -8,7 +8,7 @@
 # Version: 1.1
 
 import time
-import util
+from src import util
 
 
 class Sender(object):
@@ -58,10 +58,10 @@ class Sender(object):
                 retransmit = True
                 attempt = 0
                 while retransmit:
-                    util.send_packet(self.sender, util.build_frame(payload, seq_num))
+                    util.send_packet(self.sender, self.build_frame(payload, seq_num))
                     attempt = attempt + 1
                     rx_buffer = []
-                    if util.wait_for_ack(self.receiver):
+                    if self.wait_for_ack(self.receiver):
                         self.receiver.read(rx_buffer, self.receiver.getDynamicPayloadSize())
                         crc = rx_buffer[:self.config.CRC_SIZE]
                         seq = int.from_bytes(
