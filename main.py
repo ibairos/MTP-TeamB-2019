@@ -184,35 +184,49 @@ def main():
     else:
         exit(0)
 
-    start_wait_blink()
+    resend = True
+    go_sw_on = True
 
-    while not GO:
-        go_sw = GPIO.input(conf_general.SW_GO)
-        if go_sw == 1:
-            GO = True
-            print("Go pushed, starting transmission...")
+    while resend:
+
+        start_wait_blink()
+
+        while not GO:
+            go_sw = GPIO.input(conf_general.SW_GO)
+            if go_sw == 1:
+                GO = True
+                print("Go pushed, starting transmission...")
+            else:
+                time.sleep(0.1)
+
+        print("Clearing outputs...")
+        util.clear_outputs(config_file)
+
+        success = False
+        if ROLE == role.TX:
+            start_tx_rx_blink()
+            success = device.transmit()
+        elif ROLE == role.RX:
+            start_tx_rx_blink()
+            success = device.receive()
         else:
-            time.sleep(0.1)
+            exit(0)
 
-    util.clear_outputs(config_file)
+        GO = False
+        if success:
+            TX_SUCCESS = True
+            set_success_led()
+        else:
+            set_error_led()
 
-    success = False
-    if ROLE == role.TX:
-        start_tx_rx_blink()
-        success = device.transmit()
-    elif ROLE == role.RX:
-        start_tx_rx_blink()
-        success = device.receive()
-    else:
-        exit(0)
-
-    GO = False
-    if success:
-        TX_SUCCESS = True
-        set_success_led()
-    else:
-        set_error_led()
-
+        while go_sw_on:
+            go_sw = GPIO.input(conf_general.SW_GO)
+            if go_sw == 0:
+                go_sw_on = True
+                resend = True
+                print("Go unchecked, REstarting transmission...")
+            else:
+                time.sleep(0.1)
 
 if __name__ == '__main__':
     main()
