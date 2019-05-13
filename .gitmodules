@@ -1,0 +1,3 @@
+[submodule "NM"]
+	path = NM
+	url = https://github.com/J0oan/mtp2019-network.git
