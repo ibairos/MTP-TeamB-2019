@@ -16,13 +16,13 @@ from src import util
 from src.sender import Sender
 from src.receiver import Receiver
 
-from conf import conf_qm_receiver, conf_qm_sender
+from conf import conf_nm
 from conf import conf_srm_receiver, conf_srm_sender
 from conf import conf_mrm_receiver, conf_mrm_sender
 from conf import conf_burst_receiver, conf_burst_sender
-from conf import conf_general
+from conf import pins
 
-from const import mode, role
+from const import mode, role, const
 
 
 # Initialization
@@ -58,7 +58,7 @@ def init_radios(config):
 
 def check_role():
     global ROLE
-    sw_role = GPIO.input(conf_general.SW_ROLE)
+    sw_role = GPIO.input(pins.SW_ROLE)
     if sw_role == 0:
         ROLE = role.RX
         return True
@@ -71,35 +71,49 @@ def check_role():
 
 def check_mode():
     global MODE
-    MODE = mode.SRM
+    mode_1 = GPIO.input(pins.SW_MODE_1)
+    mode_2 = GPIO.input(pins.SW_MODE_2)
+
+    mode_2bits = (mode_1 << 1) | mode_2
+
+    if mode_2bits == 0:
+        MODE = mode.SRM
+    elif mode_2bits == 1:
+        MODE = mode.MRM
+    elif mode_2bits == 2:
+        MODE = mode.NM
+    elif mode_2bits == 3:
+        MODE = mode.BURST
+    else:
+        MODE = mode.NONE
+        return False
+
     return True
 
 
 def setup_gpio():
     # Setup inputs
-    GPIO.setup(conf_general.SW_ROLE, GPIO.IN)
-    GPIO.setup(conf_general.SW_GO, GPIO.IN)
+    GPIO.setup(pins.SW_ROLE, GPIO.IN)
+    GPIO.setup(pins.SW_MODE_1, GPIO.IN)
+    GPIO.setup(pins.SW_MODE_2, GPIO.IN)
+    GPIO.setup(pins.BTN_GO, GPIO.IN)
     # Setup outputs
-    GPIO.setup(conf_general.LED_RX_ROLE, GPIO.OUT)
-    GPIO.setup(conf_general.LED_TX_ROLE, GPIO.OUT)
-    GPIO.setup(conf_general.LED_TX_RX_PROCESS, GPIO.OUT)
-    # Setting up LEDs to off
-    GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
-    GPIO.output(conf_general.LED_TX_ROLE, 0)
-    GPIO.output(conf_general.LED_RX_ROLE, 0)
+    GPIO.setup(pins.LED_WAIT, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(pins.LED_PROCESS, GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup(pins.LED_SUCCESS, GPIO.OUT, initial=GPIO.LOW)
 
 
 def select_conf():
     if ROLE == role.TX:
-        if MODE == mode.QM:
-            print("Entering QM-TX Mode...")
-            return conf_qm_sender
-        elif MODE == mode.SRM:
+        if MODE == mode.SRM:
             print("Entering SRM-TX Mode...")
             return conf_srm_sender
         elif MODE == mode.MRM:
             print("Entering MRM-TX Mode...")
             return conf_mrm_sender
+        elif MODE == mode.NM:
+            print("Entering NM...")
+            return conf_nm
         elif MODE == mode.BURST:
             print("Entering BURST-TX Mode...")
             return conf_burst_sender
@@ -107,15 +121,15 @@ def select_conf():
             print("No mode selected. Exiting...")
             exit(0)
     elif ROLE == role.RX:
-        if MODE == mode.QM:
-            print("Entering QM-RX Mode...")
-            return conf_qm_receiver
-        elif MODE == mode.SRM:
+        if MODE == mode.SRM:
             print("Entering SRM-RX Mode...")
             return conf_srm_receiver
         elif MODE == mode.MRM:
             print("Entering MRM-RX Mode...")
             return conf_mrm_receiver
+        elif MODE == mode.NM:
+            print("Entering NM Mode...")
+            return conf_nm
         elif MODE == mode.BURST:
             print("Entering BURST-RX Mode...")
             return conf_burst_receiver
@@ -127,92 +141,126 @@ def select_conf():
         exit(0)
 
 
-def start_tx_rx_blink():
-    blink_thread = Thread(target=blink_tx_rx, args=(conf_general.TX_RX_BLINK_PERIOD,))
+def start_process_blink():
+    blink_thread = Thread(target=blink_process, args=(const.PROCESS_BLINK_PERIOD,))
     blink_thread.start()
 
 
 def start_wait_blink():
-    blink_thread = Thread(target=blink_wait, args=(conf_general.WAIT_BLINK_PERIOD,))
+    blink_thread = Thread(target=blink_wait, args=(const.WAIT_BLINK_PERIOD,))
     blink_thread.start()
 
 
-def blink_tx_rx(blink_period):
+def blink_process(blink_period):
     while GO:
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+        GPIO.output(pins.LED_PROCESS, 1)
         time.sleep(blink_period)
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
+        GPIO.output(pins.LED_PROCESS, 0)
         time.sleep(blink_period)
 
 
 def blink_wait(blink_period):
     while not TX_SUCCESS and not GO:
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+        GPIO.output(pins.LED_WAIT, 1)
         time.sleep(blink_period)
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
+        GPIO.output(pins.LED_WAIT, 0)
         time.sleep(blink_period)
 
 
-def set_success_led():
-    GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
-    GPIO.output(conf_general.LED_TX_ROLE, 1)
-
-
-def set_error_led():
-    GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
-    GPIO.output(conf_general.LED_TX_ROLE, 0)
+def set_success_led(code):
+    GPIO.output(pins.LED_SUCCESS, code)
 
 
 def main():
     global GO, TX_SUCCESS
 
+    # Basic init
     setup_gpio()
+    program_ended = False
+    execution_number = 0
 
-    check_role()
     check_mode()
+    if MODE is mode.NM:
+        config_file = select_conf()
+        # TODO Init and execute NM
+        print("Entered NM")
 
-    config_file = select_conf()
+    while not program_ended and MODE is not mode.NM:
+        # Increment and print execution number
+        execution_number = execution_number + 1
+        print("Execution number " + str(execution_number) + " started")
+        execution_ended = False
 
-    init_radios(config_file)
+        while not execution_ended:
+            # If there is any errors, we restart the cycle and read the parameters again
+            if not check_role():
+                break
+            if not check_mode():
+                break
 
-    device = None
+            # Read proper configuration file
+            config_file = select_conf()
 
-    if ROLE == role.TX:
-        device = Sender(config_file, SENDER, RECEIVER)
-    elif ROLE == role.RX:
-        device = Receiver(config_file, SENDER, RECEIVER)
-    else:
-        exit(0)
+            # Initialize radios and tx/rx devices
+            init_radios(config_file)
+            if ROLE == role.TX:
+                device = Sender(config_file, SENDER, RECEIVER)
+            elif ROLE == role.RX:
+                device = Receiver(config_file, SENDER, RECEIVER)
+            else:
+                break
 
-    start_wait_blink()
+            # Show program is waiting for the GO
+            start_wait_blink()
+            print("Waiting for the GO...")
 
-    while not GO:
-        go_sw = GPIO.input(conf_general.SW_GO)
-        if go_sw == 1:
-            GO = True
-            print("Go pushed, starting transmission...")
+            # Wait until GO is pushed
+            while not GO:
+                go_sw = GPIO.input(pins.BTN_GO)
+                if go_sw == 1:
+                    GO = True
+                    print("GO pushed, starting transmission/reception...")
+                else:
+                    time.sleep(0.05)
+
+            # Clear output folders
+            print("Clearing outputs...")
+            util.clear_outputs(config_file)
+
+            # Start tx/rx
+            if ROLE == role.TX:
+                start_process_blink()
+                success = device.transmit()
+            elif ROLE == role.RX:
+                start_process_blink()
+                success = device.receive()
+            else:
+                break
+
+            # Set success LED according to the result
+            GO = False
+            if success:
+                TX_SUCCESS = True
+                set_success_led(const.CODE_SUCCESS)
+            else:
+                set_success_led(const.CODE_ERROR)
+
+            # Wait for the user to see that the program has ended successfully
+            # If ANOTHER EXECUTION is desired, GO must be pushed
+            # If END OF PROGRAM is desired, NOTHING should be done
+            while not execution_ended:
+                go_sw = GPIO.input(pins.BTN_GO)
+                if go_sw == 1:
+                    execution_ended = True
+                    print("GO pushed, ending execution ...")
+                else:
+                    time.sleep(0.05)
+
+        # Print the success of the execution
+        if TX_SUCCESS:
+            print("Execution " + str(execution_number) + " ended SUCCESSFULLY")
         else:
-            time.sleep(0.1)
-
-    print("Clearing outputs...")
-    util.clear_outputs(config_file)
-
-    success = False
-    if ROLE == role.TX:
-        start_tx_rx_blink()
-        success = device.transmit()
-    elif ROLE == role.RX:
-        start_tx_rx_blink()
-        success = device.receive()
-    else:
-        exit(0)
-
-    GO = False
-    if success:
-        TX_SUCCESS = True
-        set_success_led()
-    else:
-        set_error_led()
+            print("Execution " + str(execution_number) + " ended WITH ERRORS")
 
 
 if __name__ == '__main__':

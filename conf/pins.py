@@ -1,0 +1,12 @@
+
+# TODO Set new SW + BTN GPIO pins
+
+SW_ROLE = -1
+SW_MODE_1 = -1  # MSB
+SW_MODE_2 = -1  # LSB
+
+BTN_GO = -1
+
+LED_WAIT = 26  # LED1
+LED_PROCESS = 19  # LED2
+LED_SUCCESS = 13  # LED3

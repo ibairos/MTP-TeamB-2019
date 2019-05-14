@@ -6,8 +6,8 @@ SEQ_NUM_SIZE = 2
 CRC_SIZE = 2
 
 # Timeouts
-DATA_TIMEOUT = 0.03
-ACK_TIMEOUT = 0.03
+DATA_TIMEOUT = 0.006
+ACK_TIMEOUT = 0.006
 
 # Compression
 COMPRESSION_LEVEL = 6
@@ -26,6 +26,7 @@ IN_PATH_COMPRESSED = "/home/pi/MTP-TeamB-2019/files/input/srm/compressed/"
 IN_FILEPATH_RAW = IN_PATH_RAW + DEFAULT_FILENAME_RAW
 IN_FILEPATH_COMPRESSED = IN_PATH_COMPRESSED + DEFAULT_FILENAME_COMPRESSED
 
+# Channels / pipes
 channels = [30, 40]
 pipes = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [0xc2, 0xc2, 0xc2, 0xc2, 0xc2]]
 
