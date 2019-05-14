@@ -1,6 +1,0 @@
-UTF-8 encoded sample file for Postscript plain-text file formatters
--------------------------------------------------------------------
-Markus Kuhn <mkuhn@acm.org> — 1999-09-15
-The following 271 Unicode characters are a minimum repertoire that any
-modern Postscript printer driver receiving plaintext should be able to
-render using the default Postscript fonts (Adobe Courier, etc.).
