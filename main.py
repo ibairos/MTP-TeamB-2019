@@ -23,6 +23,9 @@ from conf import pins
 
 from const import mode, role, const
 
+from NM import network_mode
+from conf.conf_nm import team_configuration
+from GPIO_Manager_NM import GPIOManager
 
 
 # Initialization
@@ -160,19 +163,26 @@ def set_success_led(code):
 def main():
     global GO, TX_SUCCESS
 
+    setup_gpio()
 
-    check_mode()
+    while not (check_mode() and check_role()):
+        print("Mode and role checked unsuccessfully. Retrying...")
+        time.sleep(0.5)
+
     if MODE is mode.NM:
-        config_file = select_conf()
-        # TODO Init and execute NM
-        print("Entered NM")
+        print("Entered NM code")
+        led_manager = GPIOManager()
+        network_mode.start(ROLE, led_manager, team_configuration)
+
+    ####################################################
+    # This code will not be executed if the mode is NM #
+    ####################################################
 
     # Basic init
     program_ended = False
     execution_number = 0
 
     while not program_ended and MODE is not mode.NM:
-        setup_gpio()
         # Increment and print execution number
         execution_number = execution_number + 1
         print("Execution number " + str(execution_number) + " started")

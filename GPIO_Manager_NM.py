@@ -1,20 +1,10 @@
 import RPi.GPIO as GPIO
 from conf import pins
 
+
 class GPIOManager:
     def __init__(self):
-        # Initialization
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-
-        # Setup inputs
-        GPIO.setup(pins.SW_ROLE, GPIO.IN)
-        GPIO.setup(pins.SW_MODE, GPIO.IN)
-        GPIO.setup(pins.BTN_GO, GPIO.IN)
-        # Setup outputs
-        GPIO.setup(pins.LED_WAIT, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(pins.LED_PROCESS, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(pins.LED_SUCCESS, GPIO.OUT, initial=GPIO.LOW)
+        print("Initialized GPIO manager")
 
     def network_starting(self):
         self.leds_off()

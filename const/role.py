@@ -1,5 +1,5 @@
 
-TX = 0
-RX = 1
+TX = "tx"
+RX = "rx"
 
-NONE = -1
+NONE = "none"

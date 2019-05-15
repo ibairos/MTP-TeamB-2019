@@ -1,6 +1,6 @@
 
-SRM = 0
-NM = 1
-BURST = 2
+SRM = "srm"
+NM = "nm"
+BURST = "burst"
 
-NONE = -1
+NONE = "none"
