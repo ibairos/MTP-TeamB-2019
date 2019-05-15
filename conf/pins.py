@@ -1,6 +1,4 @@
 
-# TODO Set new BTN GPIO pin
-
 SW_ROLE = 5
 SW_MODE = 6
 
