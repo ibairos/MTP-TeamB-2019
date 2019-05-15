@@ -18,7 +18,6 @@ from src.receiver import Receiver
 
 from conf import conf_nm
 from conf import conf_srm_receiver, conf_srm_sender
-from conf import conf_mrm_receiver, conf_mrm_sender
 from conf import conf_burst_receiver, conf_burst_sender
 from conf import pins
 
@@ -71,19 +70,12 @@ def check_role():
 
 def check_mode():
     global MODE
-    mode_1 = GPIO.input(pins.SW_MODE_1)
-    mode_2 = GPIO.input(pins.SW_MODE_2)
+    mode_sw = GPIO.input(pins.SW_MODE)
 
-    mode_2bits = (mode_1 << 1) | mode_2
-
-    if mode_2bits == 0:
+    if mode_sw == 0:
         MODE = mode.SRM
-    elif mode_2bits == 1:
-        MODE = mode.MRM
-    elif mode_2bits == 2:
+    elif mode_sw == 1:
         MODE = mode.NM
-    elif mode_2bits == 3:
-        MODE = mode.BURST
     else:
         MODE = mode.NONE
         return False
@@ -94,8 +86,7 @@ def check_mode():
 def setup_gpio():
     # Setup inputs
     GPIO.setup(pins.SW_ROLE, GPIO.IN)
-    GPIO.setup(pins.SW_MODE_1, GPIO.IN)
-    GPIO.setup(pins.SW_MODE_2, GPIO.IN)
+    GPIO.setup(pins.SW_MODE, GPIO.IN)
     GPIO.setup(pins.BTN_GO, GPIO.IN)
     # Setup outputs
     GPIO.setup(pins.LED_WAIT, GPIO.OUT, initial=GPIO.LOW)
@@ -108,9 +99,6 @@ def select_conf():
         if MODE == mode.SRM:
             print("Entering SRM-TX Mode...")
             return conf_srm_sender
-        elif MODE == mode.MRM:
-            print("Entering MRM-TX Mode...")
-            return conf_mrm_sender
         elif MODE == mode.NM:
             print("Entering NM...")
             return conf_nm
@@ -124,9 +112,6 @@ def select_conf():
         if MODE == mode.SRM:
             print("Entering SRM-RX Mode...")
             return conf_srm_receiver
-        elif MODE == mode.MRM:
-            print("Entering MRM-RX Mode...")
-            return conf_mrm_receiver
         elif MODE == mode.NM:
             print("Entering NM Mode...")
             return conf_nm
