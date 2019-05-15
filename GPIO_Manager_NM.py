@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-from conf import conf_general
+from conf import pins
 
 class GPIOManager:
     def __init__(self):
@@ -8,46 +8,38 @@ class GPIOManager:
         GPIO.setwarnings(False)
 
         # Setup inputs
-        GPIO.setup(conf_general.SW_ROLE, GPIO.IN)
-        GPIO.setup(SW_GO, GPIO.IN)
+        GPIO.setup(pins.SW_ROLE, GPIO.IN)
+        GPIO.setup(pins.SW_MODE, GPIO.IN)
+        GPIO.setup(pins.BTN_GO, GPIO.IN)
         # Setup outputs
-        GPIO.setup(conf_general.LED_RX_ROLE, GPIO.OUT)
-        GPIO.setup(conf_general.LED_TX_ROLE, GPIO.OUT)
-        GPIO.setup(conf_general.LED_TX_RX_PROCESS, GPIO.OUT)
-        # Setting up LEDs to off
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
-        GPIO.output(conf_general.LED_TX_ROLE, 0)
-        GPIO.output(conf_general.LED_RX_ROLE, 0)
+        GPIO.setup(pins.LED_WAIT, GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(pins.LED_PROCESS, GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup(pins.LED_SUCCESS, GPIO.OUT, initial=GPIO.LOW)
 
     def network_starting(self):
-        self.leds_off(self)
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+        self.leds_off()
+        GPIO.output(pins.LED_WAIT, 1)
 
     def network_tx(self):
-        self.leds_off(self)
-        GPIO.output(conf_general.LED_TX_ROLE, 1)
+        self.leds_off()
+        GPIO.output(pins.LED_PROCESS, 1)
 
     def network_rx(self):
-        self.leds_off(self)
-        GPIO.output(conf_general.LED_RX_ROLE, 1)
+        self.leds_off()
+        GPIO.output(pins.LED_PROCESS, 1)
+        GPIO.output(pins.LED_WAIT, 1)
 
     def network_error(self):
-        self.leds_off(self)
-        GPIO.output(conf_general.LED_RX_ROLE, 1)
-        GPIO.output(conf_general.LED_TX_ROLE, 1)
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
+        self.leds_off()
 
     def network_succes(self):
-        self.leds_off(self)
-        GPIO.output(conf_general.LED_RX_ROLE, 1)
-        GPIO.output(conf_general.LED_TX_ROLE, 1)
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 1)
-
+        self.leds_off()
+        GPIO.output(pins.LED_SUCCESS, 1)
 
     def leds_off(self):
-        GPIO.output(conf_general.LED_TX_RX_PROCESS, 0)
-        GPIO.output(conf_general.LED_TX_ROLE, 0)
-        GPIO.output(conf_general.LED_RX_ROLE, 0)
+        GPIO.output(pins.LED_WAIT, 0)
+        GPIO.output(pins.LED_PROCESS, 0)
+        GPIO.output(pins.LED_SUCCESS, 0)
 
 
 

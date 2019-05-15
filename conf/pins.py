@@ -1,9 +1,8 @@
 
-# TODO Set new SW + BTN GPIO pins
+# TODO Set new BTN GPIO pin
 
-SW_ROLE = -1
-SW_MODE_1 = -1  # MSB
-SW_MODE_2 = -1  # LSB
+SW_ROLE = 5
+SW_MODE = 6
 
 BTN_GO = -1
 

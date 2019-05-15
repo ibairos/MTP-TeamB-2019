@@ -1,7 +1,6 @@
 
 SRM = 0
-MRM = 1
-NM = 2
-BURST = 3
+NM = 1
+BURST = 2
 
 NONE = -1

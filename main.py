@@ -24,6 +24,7 @@ from conf import pins
 from const import mode, role, const
 
 
+
 # Initialization
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -159,10 +160,6 @@ def set_success_led(code):
 def main():
     global GO, TX_SUCCESS
 
-    # Basic init
-    setup_gpio()
-    program_ended = False
-    execution_number = 0
 
     check_mode()
     if MODE is mode.NM:
@@ -170,7 +167,12 @@ def main():
         # TODO Init and execute NM
         print("Entered NM")
 
+    # Basic init
+    program_ended = False
+    execution_number = 0
+
     while not program_ended and MODE is not mode.NM:
+        setup_gpio()
         # Increment and print execution number
         execution_number = execution_number + 1
         print("Execution number " + str(execution_number) + " started")
