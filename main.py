@@ -23,6 +23,7 @@ from conf import conf_burst_receiver, conf_burst_sender
 from conf import conf_general
 
 from const import mode, role
+import GPIO_Manager_NM
 
 
 # Initialization
@@ -167,10 +168,9 @@ def main():
     global GO, TX_SUCCESS
 
     setup_gpio()
-
     check_role()
     check_mode()
-
+    led_manager=GPIO_Manager_NM()
     config_file = select_conf()
 
     init_radios(config_file)
