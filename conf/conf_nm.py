@@ -1,6 +1,6 @@
 from bunch import Bunch
 import logging
-from NRF24 import *
+from RF24 import *
 
 
 team_configuration = Bunch({
