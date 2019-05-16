@@ -13,6 +13,6 @@
 
 
 # Added execution and logging of the MTP-TeamB-2019 project
-su pi -c 'sh /home/pi/MTP-TeamB-2019/run.sh &'
+sh /home/pi/MTP-TeamB-2019/run.sh &
 
 exit 0
