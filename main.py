@@ -91,7 +91,7 @@ def setup_gpio():
     # Setup inputs
     GPIO.setup(pins.SW_ROLE, GPIO.IN)
     GPIO.setup(pins.SW_MODE, GPIO.IN)
-    GPIO.setup(pins.BTN_GO, GPIO.IN)
+    GPIO.setup(pins.BTN_GO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     # Setup outputs
     GPIO.setup(pins.LED_WAIT, GPIO.OUT, initial=GPIO.LOW)
     GPIO.setup(pins.LED_PROCESS, GPIO.OUT, initial=GPIO.LOW)
