@@ -5,6 +5,9 @@ DATA_SIZE = 28
 SEQ_NUM_SIZE = 2
 CRC_SIZE = 2
 
+# Burst size
+BURST_SIZE = 20
+
 # Timeouts
 DATA_TIMEOUT = 0.01
 ACK_TIMEOUT = 0.01
