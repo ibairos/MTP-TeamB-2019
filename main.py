@@ -214,7 +214,7 @@ def main():
             # Wait until GO is pushed
             while not GO:
                 go_sw = GPIO.input(pins.BTN_GO)
-                if go_sw == 1:
+                if go_sw == 0:
                     GO = True
                     print("GO pushed, starting transmission/reception...")
                 else:
@@ -247,7 +247,7 @@ def main():
             # If END OF PROGRAM is desired, NOTHING should be done
             while not execution_ended:
                 go_sw = GPIO.input(pins.BTN_GO)
-                if go_sw == 1:
+                if go_sw == 0:
                     execution_ended = True
                     print("GO pushed, ending execution ...")
                 else:
