@@ -22,7 +22,7 @@ class GPIOManager:
     def network_error(self):
         self.leds_off()
 
-    def network_succes(self):
+    def network_success(self):
         self.leds_off()
         GPIO.output(pins.LED_SUCCESS, 1)
 
