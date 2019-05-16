@@ -130,6 +130,18 @@ def select_conf():
         exit(0)
 
 
+def wait_for_go():
+    global GO
+    # Wait until GO is pushed
+    while not GO:
+        go_sw = GPIO.input(pins.BTN_GO)
+        if go_sw == 0:
+            GO = True
+            print("GO pushed, starting transmission/reception...")
+        else:
+            time.sleep(0.05)
+
+
 def start_process_blink():
     blink_thread = Thread(target=blink_process, args=(const.PROCESS_BLINK_PERIOD,))
     blink_thread.start()
@@ -146,6 +158,7 @@ def blink_process(blink_period):
         time.sleep(blink_period)
         GPIO.output(pins.LED_PROCESS, 0)
         time.sleep(blink_period)
+    print("Process blink ended")
 
 
 def blink_wait(blink_period):
@@ -154,6 +167,7 @@ def blink_wait(blink_period):
         time.sleep(blink_period)
         GPIO.output(pins.LED_WAIT, 0)
         time.sleep(blink_period)
+    print("Wait blink ended")
 
 
 def set_success_led(code):
@@ -166,12 +180,13 @@ def main():
     setup_gpio()
 
     while not (check_mode() and check_role()):
-        print("Mode and role checked unsuccessfully. Retrying...")
+        print("Mode and/or role checked unsuccessfully. Retrying...")
         time.sleep(0.5)
 
     if MODE is mode.NM:
         print("Entered NM code")
         led_manager = GPIOManager()
+        wait_for_go()
         network_mode.start(ROLE, led_manager, team_configuration)
 
     ####################################################
@@ -211,14 +226,7 @@ def main():
             start_wait_blink()
             print("Waiting for the GO...")
 
-            # Wait until GO is pushed
-            while not GO:
-                go_sw = GPIO.input(pins.BTN_GO)
-                if go_sw == 0:
-                    GO = True
-                    print("GO pushed, starting transmission/reception...")
-                else:
-                    time.sleep(0.05)
+            wait_for_go()
 
             # Clear output folders
             print("Clearing outputs...")
