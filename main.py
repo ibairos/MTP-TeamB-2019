@@ -249,6 +249,7 @@ def main():
             GO = False
             if success:
                 TX_SUCCESS = True
+                time.sleep(0.5)
                 set_success_led(const.CODE_SUCCESS)
             else:
                 set_success_led(const.CODE_ERROR)
@@ -260,6 +261,8 @@ def main():
                 go_sw = GPIO.input(pins.BTN_GO)
                 if go_sw == 0:
                     execution_ended = True
+                    # Switching off the LEDs
+                    set_success_led(const.CODE_ERROR)
                     print("GO pushed, ending execution ...")
                 else:
                     time.sleep(0.05)
