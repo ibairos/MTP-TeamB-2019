@@ -5,7 +5,7 @@ from RF24 import *
 
 team_configuration = Bunch({
         "File_Path_Input": "/home/pi/MTP-TeamB-2019/files/input/nm/file.txt",
-        "File_Path_Output": "/home/pi/MTP-TeamB-2019/files/input/nm/file.txt",
+        "File_Path_Output": "/home/pi/MTP-TeamB-2019/files/output/nm/file.txt",
         "Log_Path": "/home/pi/MTP-TeamB-2019/logs/logger.log",
         "Log_Level": logging.DEBUG,
         "Tx_CS": RPI_V2_GPIO_P1_22,
