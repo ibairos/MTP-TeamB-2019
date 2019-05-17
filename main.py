@@ -186,6 +186,7 @@ def main():
     if MODE is mode.NM:
         print("Entered NM code")
         led_manager = GPIOManager()
+        start_wait_blink()
         wait_for_go()
         network_mode.start(ROLE, led_manager, team_configuration)
 
