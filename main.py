@@ -171,6 +171,8 @@ def blink_wait(blink_period):
 
 
 def set_success_led(code):
+    GPIO.output(pins.LED_WAIT, code)
+    GPIO.output(pins.LED_PROCESS, code)
     GPIO.output(pins.LED_SUCCESS, code)
 
 
