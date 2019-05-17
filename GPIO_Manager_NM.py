@@ -24,6 +24,8 @@ class GPIOManager:
 
     def network_success(self):
         self.leds_off()
+        GPIO.output(pins.LED_WAIT, 1)
+        GPIO.output(pins.LED_PROCESS, 1)
         GPIO.output(pins.LED_SUCCESS, 1)
 
     def leds_off(self):
